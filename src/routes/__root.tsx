@@ -1,5 +1,6 @@
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
@@ -15,6 +16,8 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/hooks/theme-provider'
+import { NotFound } from '@/components/not-found'
+import { DefaultCatchBoundary } from '@/components/default-cache-boundary'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -41,10 +44,30 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
-
-  shellComponent: RootDocument,
-  notFoundComponent: () => <div>404 - Not Found</div>,
+   errorComponent: (props) => {
+    return (
+      <RootDocument>
+        <DefaultCatchBoundary {...props} />
+      </RootDocument>
+    );
+  },
+component: RootComponent,
+  notFoundComponent: () => <NotFound />,
 })
+
+function RootComponent() {
+  return (
+    <RootDocument>
+      <ThemeProvider
+    
+        defaultTheme="system"
+ 
+      >
+        <Outlet />
+      </ThemeProvider>
+    </RootDocument>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

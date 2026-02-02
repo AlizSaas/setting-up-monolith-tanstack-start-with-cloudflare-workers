@@ -5,10 +5,15 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
+	"observability": {
+		"enabled": true
+	}, // Enable Cloudflare Observability
 	"main": "./src/server.ts",
+	
 	"vars": {
-		"MY_VAR": "Hello from Cloudflare",
-		"BETTER_AUTH_URL": "https://tanstack-start-app.alizdevs.workers.dev/"
+		"BETTER_AUTH_URL": "https://tanstack-start-app.alizdevs.workers.dev/",
+		"CLOUDFLARE_ACCOUNT_ID": "04cb99e92f7e20dd5cafcdf75be555bc",
+		"EMAIL_FROM": "Invo Invoices <no-reply@alizmail.com>"
 	},
 	"kv_namespaces": [
 		{
@@ -16,46 +21,14 @@
 			"id": "88f238fcbe0f42de925e2420fd9af219"
 		}
 	],
-	"queues": {
-		"producers": [
-			{
-				"binding": "MY_QUEUE",
-				"queue": "codes-queue",
-				"remote": true
-			}
-		],
-		"consumers": [
-			{
-				"queue": "codes-queue",
-				"dead_letter_queue": "my-queue-dlq"
-			}
-		]
-	},
 	"ai": {
-		"binding": "AI",
+		"binding": "AI"
 	},
-	"durable_objects": {
-		"bindings": [
-			{
-				"name": "CODE_SCHEDULAR",
-				"class_name": "CodeEvalutionScheduler"
-			}
-		]
-	},
-	"migrations": [
+	"r2_buckets": [
 		{
-			"tag": "v1",
-			"new_classes": ["CodeEvalutionScheduler"]
-		}
-	],
-	"workflows": [
-		{
-			"binding": "CODE_WORKFLOW",
-			"name": "code-workflow",
-			"class_name": "CodeEvalutionWorkflow"
-
+			"binding": "STORAGE",
+			"bucket_name": "invo-storage",
+			"remote": true
 		}
 	]
-
-
 }

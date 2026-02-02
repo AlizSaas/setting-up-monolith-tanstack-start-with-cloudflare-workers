@@ -43,6 +43,41 @@
       "when": 1769619206274,
       "tag": "0005_unknown_the_hunter",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1769647126459,
+      "tag": "0006_mixed_landau",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1769648487245,
+      "tag": "0007_flaky_franklin_richards",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1769697690053,
+      "tag": "0008_unusual_wong",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1769808552883,
+      "tag": "0009_lame_sunspot",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1769990432130,
+      "tag": "0010_strong_blackheart",
+      "breakpoints": true
     }
   ]
 }

@@ -4,6 +4,10 @@ import { ArrowLeft } from 'lucide-react'
 
 export const Route = createFileRoute('/_auth')({
   component: RouteComponent,
+  beforeLoad: async () => {
+    // if a user if found in the session, redirect to dashboard
+    
+  }
 })
 
 function RouteComponent() {

@@ -1,12 +1,10 @@
 import { createMiddleware } from "@tanstack/react-start";
-
-
 import {  getAuth } from "../lib/auth";
 import { getDb } from "@/db";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { redirect } from "@tanstack/react-router";
 
-export const dependencyMiddleware = createMiddleware().server(
+export const dependencyMiddleware = createMiddleware({}).server(
   async ({ next, context }) => {
     const db = getDb();
     const auth = getAuth();
@@ -19,7 +17,7 @@ export const dependencyMiddleware = createMiddleware().server(
       },
     });
   }
-);
+); // dependencyMiddleware
 
 export const authMiddleware = createMiddleware()
   .middleware([dependencyMiddleware])
@@ -29,7 +27,7 @@ export const authMiddleware = createMiddleware()
 
     if (!session) {
       throw redirect({ to: "/login" });
-    }
+    } // if no session, redirect to login
 
     return next({
       context: {
@@ -38,4 +36,4 @@ export const authMiddleware = createMiddleware()
         user: session.user,
       },
     });
-  });
+  }); 
