@@ -6,6 +6,7 @@ import {  eq } from "drizzle-orm";
 import z from "zod";
 import { generateId } from "../invoices/invoices";
 import { StripeService } from "@/services/stripe";
+import { publicInvoiceRateLimiter } from "@/middlewares/rate-limited";
 
 // In your middlewares/dependencies.ts file, add:
 
@@ -14,7 +15,7 @@ import { StripeService } from "@/services/stripe";
 // Then update your public invoice functions:
 
 export const getPublicInvoiceFn = createServerFn({ method: "GET" })
-  .middleware([publicMiddleware]) // Changed from authMiddleware
+  .middleware([publicMiddleware,publicInvoiceRateLimiter]) // Changed from authMiddleware
   .inputValidator(z.object({ token: z.string() }))
   .handler(async ({ context, data }) => {
     const { db } = context;

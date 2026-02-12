@@ -3,7 +3,8 @@ import { invoices, clients, invoiceEvents, invoiceItems, settings, invoicePublic
 import { createInvoiceSchema, invoiceFilterSchema, updateInvoiceSchema } from "@/lib/schema.type";
 
 import { calculateInvoiceTotals, generateToken } from "@/lib/utils";
-import { authMiddleware } from "@/middlewares/dependencies";
+import { authMiddleware, } from "@/middlewares/dependencies";
+import { apiRateLimiter,resourceIntensiveRateLimiter } from "@/middlewares/rate-limited";
 import { Emailservice } from "@/services/email";
 import { PDFService } from "@/services/pdf";
 import { AnalyticsService } from "@/utils/analytics";
@@ -16,13 +17,13 @@ import z from "zod";
 export function generateId(): string {
   return crypto.randomUUID();
 }
-// Input validator schemas
+
 
 
 
 // Get invoices list with pagination
 export const getInvoicesFn = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
+  .middleware([authMiddleware,apiRateLimiter])
   .inputValidator(invoiceFilterSchema)
   .handler(async ({ context, data }) => {
     const { db, user } = context;
@@ -101,7 +102,7 @@ export const getInvoicesFn = createServerFn({ method: "GET" })
 
 // Get single invoice by ID with items
 export const getInvoiceByIdFn = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
+  .middleware([authMiddleware,apiRateLimiter])
   .inputValidator(z.object({ id: z.string() }))
   .handler(async ({ context, data }) => {
     const { db, user } = context;
@@ -170,7 +171,7 @@ export const getInvoiceByIdFn = createServerFn({ method: "GET" })
   });
 // Create new invoice
 export const createInvoiceFn = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
+  .middleware([authMiddleware,apiRateLimiter])
   .inputValidator(createInvoiceSchema)
   .handler(async ({ context, data }) => {
     const { db, user } = context;
@@ -283,7 +284,7 @@ export const createInvoiceFn = createServerFn({ method: "POST" })
 
 // Update existing invoice
 export const updateInvoiceFn = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
+  .middleware([authMiddleware,apiRateLimiter])
   .inputValidator(z.object({ id: z.string(), data: updateInvoiceSchema }))
   .handler(async ({ context, data: input }) => {
     const { db, user } = context;
@@ -393,7 +394,7 @@ export const updateInvoiceFn = createServerFn({ method: "POST" })
 
 
   export const sendInvoiceFn = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([authMiddleware,resourceIntensiveRateLimiter])
     .inputValidator(z.object({ invoiceId: z.string() }))
     .handler(async ({ context, data }) => {
       const { db, user } = context;
@@ -521,7 +522,7 @@ if (invoice.remindersEnabled) {
     });
 
   export const duplicateInvoiceFn = createServerFn({ method: "POST" })
-    .middleware([authMiddleware])
+    .middleware([authMiddleware,apiRateLimiter])
     .inputValidator(z.object({ invoiceId: z.string() }))
     .handler(async ({ context, data }) => {
       const { db, user } = context;
@@ -673,7 +674,7 @@ async function getInvoiceWithDetails(
 }
 
 export const generatePdfFn = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
+  .middleware([authMiddleware,resourceIntensiveRateLimiter])
   .inputValidator(z.object({ invoiceId: z.string() }))
   .handler(async ({ context, data }) => {
     const { db, user, env } = context;
@@ -814,7 +815,7 @@ export const generatePdfFn = createServerFn({ method: "POST" })
   });
 // Get PDF download
 export const getInvoicePdfUrl = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
+  .middleware([authMiddleware,apiRateLimiter])
   .inputValidator(z.object({ invoiceId: z.string() }))
   .handler(async ({ context, data }) => {
     const { db, user, env } = context;

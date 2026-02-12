@@ -9,11 +9,6 @@
 		"enabled": true
 	}, // Enable Cloudflare Observability
 	"main": "./src/server.ts",
-	"vars": {
-		"BETTER_AUTH_URL": "https://tanstack-start-app.alizdevs.workers.dev",
-		"CLOUDFLARE_ACCOUNT_ID": "04cb99e92f7e20dd5cafcdf75be555bc",
-		"EMAIL_FROM": "Invo Invoices <no-reply@alizmail.com>"
-	},
 	"kv_namespaces": [
 		{
 			"binding": "KV",
@@ -45,5 +40,10 @@
 				"ReminderScheduler"
 			]
 		},
-	]
+	],
+	"vars": {
+		"BETTER_AUTH_URL": "https://tanstack-start-app.alizdevs.workers.dev",
+		"CLOUDFLARE_ACCOUNT_ID": "04cb99e92f7e20dd5cafcdf75be555bc",
+		"EMAIL_FROM": "no-reply@alizmail.com"
+	}
 }
