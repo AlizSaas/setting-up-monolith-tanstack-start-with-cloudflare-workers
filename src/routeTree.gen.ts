@@ -17,7 +17,9 @@ import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AuthSignupIndexRouteImport } from './routes/_auth/signup/index'
+import { Route as AuthResetPasswordIndexRouteImport } from './routes/_auth/reset-password/index'
 import { Route as AuthLoginIndexRouteImport } from './routes/_auth/login/index'
+import { Route as AuthForgetPasswordIndexRouteImport } from './routes/_auth/forget-password/index'
 import { Route as AppInvoicesIndexRouteImport } from './routes/_app/invoices/index'
 import { Route as AppClientsIndexRouteImport } from './routes/_app/clients/index'
 import { Route as ApiWebhookStripeRouteImport } from './routes/api/webhook/stripe'
@@ -68,9 +70,19 @@ const AuthSignupIndexRoute = AuthSignupIndexRouteImport.update({
   path: '/signup/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AuthResetPasswordIndexRoute = AuthResetPasswordIndexRouteImport.update({
+  id: '/reset-password/',
+  path: '/reset-password/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
 const AuthLoginIndexRoute = AuthLoginIndexRouteImport.update({
   id: '/login/',
   path: '/login/',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+const AuthForgetPasswordIndexRoute = AuthForgetPasswordIndexRouteImport.update({
+  id: '/forget-password/',
+  path: '/forget-password/',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 const AppInvoicesIndexRoute = AppInvoicesIndexRouteImport.update({
@@ -144,7 +156,9 @@ export interface FileRoutesByFullPath {
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/clients/': typeof AppClientsIndexRoute
   '/invoices/': typeof AppInvoicesIndexRoute
+  '/forget-password/': typeof AuthForgetPasswordIndexRoute
   '/login/': typeof AuthLoginIndexRoute
+  '/reset-password/': typeof AuthResetPasswordIndexRoute
   '/signup/': typeof AuthSignupIndexRoute
   '/invoices/$id/edit': typeof AppInvoicesIdEditRoute
   '/invoices/$id/': typeof AppInvoicesIdIndexRoute
@@ -164,7 +178,9 @@ export interface FileRoutesByTo {
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/clients': typeof AppClientsIndexRoute
   '/invoices': typeof AppInvoicesIndexRoute
+  '/forget-password': typeof AuthForgetPasswordIndexRoute
   '/login': typeof AuthLoginIndexRoute
+  '/reset-password': typeof AuthResetPasswordIndexRoute
   '/signup': typeof AuthSignupIndexRoute
   '/invoices/$id/edit': typeof AppInvoicesIdEditRoute
   '/invoices/$id': typeof AppInvoicesIdIndexRoute
@@ -187,7 +203,9 @@ export interface FileRoutesById {
   '/api/webhook/stripe': typeof ApiWebhookStripeRoute
   '/_app/clients/': typeof AppClientsIndexRoute
   '/_app/invoices/': typeof AppInvoicesIndexRoute
+  '/_auth/forget-password/': typeof AuthForgetPasswordIndexRoute
   '/_auth/login/': typeof AuthLoginIndexRoute
+  '/_auth/reset-password/': typeof AuthResetPasswordIndexRoute
   '/_auth/signup/': typeof AuthSignupIndexRoute
   '/_app/invoices/$id/edit': typeof AppInvoicesIdEditRoute
   '/_app/invoices/$id/': typeof AppInvoicesIdIndexRoute
@@ -209,7 +227,9 @@ export interface FileRouteTypes {
     | '/api/webhook/stripe'
     | '/clients/'
     | '/invoices/'
+    | '/forget-password/'
     | '/login/'
+    | '/reset-password/'
     | '/signup/'
     | '/invoices/$id/edit'
     | '/invoices/$id/'
@@ -229,7 +249,9 @@ export interface FileRouteTypes {
     | '/api/webhook/stripe'
     | '/clients'
     | '/invoices'
+    | '/forget-password'
     | '/login'
+    | '/reset-password'
     | '/signup'
     | '/invoices/$id/edit'
     | '/invoices/$id'
@@ -251,7 +273,9 @@ export interface FileRouteTypes {
     | '/api/webhook/stripe'
     | '/_app/clients/'
     | '/_app/invoices/'
+    | '/_auth/forget-password/'
     | '/_auth/login/'
+    | '/_auth/reset-password/'
     | '/_auth/signup/'
     | '/_app/invoices/$id/edit'
     | '/_app/invoices/$id/'
@@ -328,11 +352,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthSignupIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/_auth/reset-password/': {
+      id: '/_auth/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password/'
+      preLoaderRoute: typeof AuthResetPasswordIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
     '/_auth/login/': {
       id: '/_auth/login/'
       path: '/login'
       fullPath: '/login/'
       preLoaderRoute: typeof AuthLoginIndexRouteImport
+      parentRoute: typeof AuthRouteRoute
+    }
+    '/_auth/forget-password/': {
+      id: '/_auth/forget-password/'
+      path: '/forget-password'
+      fullPath: '/forget-password/'
+      preLoaderRoute: typeof AuthForgetPasswordIndexRouteImport
       parentRoute: typeof AuthRouteRoute
     }
     '/_app/invoices/': {
@@ -444,12 +482,16 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 )
 
 interface AuthRouteRouteChildren {
+  AuthForgetPasswordIndexRoute: typeof AuthForgetPasswordIndexRoute
   AuthLoginIndexRoute: typeof AuthLoginIndexRoute
+  AuthResetPasswordIndexRoute: typeof AuthResetPasswordIndexRoute
   AuthSignupIndexRoute: typeof AuthSignupIndexRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthForgetPasswordIndexRoute: AuthForgetPasswordIndexRoute,
   AuthLoginIndexRoute: AuthLoginIndexRoute,
+  AuthResetPasswordIndexRoute: AuthResetPasswordIndexRoute,
   AuthSignupIndexRoute: AuthSignupIndexRoute,
 }
 

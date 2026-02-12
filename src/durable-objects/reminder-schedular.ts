@@ -10,11 +10,10 @@ function generateReminderIdempotencyKey(
   return `${invoiceId}:${reminderType}:${scheduledDate}`;
 } // retunr {invoiceId, reminderType, scheduledDate} for better debugging?
 
-// Testing: using minutes instead of days
-const DEFAULT_REMINDER_MINUTES = {
-  before_due: 3,
+const DEFAULT_REMINDER_DAYS = {
+  before_due: 3, 
   on_due: 0,
-  after_due: 5,
+  after_due: 7,
 };
 
 const REMINDER_TYPES = ["before_due", "on_due", "after_due"] as const;
@@ -81,63 +80,54 @@ export class ReminderScheduler implements DurableObject {
     }
   }
 
-  private async handleSchedule(request: Request): Promise<Response> {
-    const body = (await request.json()) as {
-      invoice_id: string;
-      due_date: string;
-    };
+ private async handleSchedule(request: Request): Promise<Response> {
+    const body = await request.json() as { invoice_id: string; due_date: string };
     const { invoice_id, due_date } = body;
+
+    const dueDateTime = new Date(due_date).getTime();
     const now = Date.now();
 
-    const state =
-      (await this.state.storage.get<ReminderState>("state")) || {
-        invoices: {},
-      };
+    // Get existing state
+    const state = await this.state.storage.get<ReminderState>('state') || { invoices: {} };
 
+    // Calculate reminder times
     const reminders: ReminderJob[] = [];
 
-    const beforeDueTime =
-      now + DEFAULT_REMINDER_MINUTES.before_due * 60 * 1000; // this should be based on due_date in production, using now for testing
-    reminders.push({
-      invoice_id,
-      reminder_type: "before_due",
-      scheduled_at: beforeDueTime,
-      idempotency_key: generateReminderIdempotencyKey(
+    // Before due (3 days before)
+    const beforeDueTime = dueDateTime - (DEFAULT_REMINDER_DAYS.before_due * 24 * 60 * 60 * 1000);
+    if (beforeDueTime > now) {
+      reminders.push({
         invoice_id,
-        "before_due",
-        due_date
-      ),
-      sent: false,
-    });
+        reminder_type: 'before_due',
+        scheduled_at: beforeDueTime,
+        idempotency_key: generateReminderIdempotencyKey(invoice_id, 'before_due', due_date),
+        sent: false,
+      });
+    }
 
-    const onDueTime =
-      beforeDueTime + DEFAULT_REMINDER_MINUTES.before_due * 60 * 1000;
-    reminders.push({
-      invoice_id,
-      reminder_type: "on_due",
-      scheduled_at: onDueTime,
-      idempotency_key: generateReminderIdempotencyKey(
+    // On due date
+    const onDueTime = dueDateTime;
+    if (onDueTime > now) {
+      reminders.push({
         invoice_id,
-        "on_due",
-        due_date
-      ),
-      sent: false,
-    });
+        reminder_type: 'on_due',
+        scheduled_at: onDueTime,
+        idempotency_key: generateReminderIdempotencyKey(invoice_id, 'on_due', due_date),
+        sent: false,
+      });
+    }
 
-    const afterDueTime =
-      onDueTime + DEFAULT_REMINDER_MINUTES.after_due * 60 * 1000;
+    // After due (7 days after)
+    const afterDueTime = dueDateTime + (DEFAULT_REMINDER_DAYS.after_due * 24 * 60 * 60 * 1000);
     reminders.push({
       invoice_id,
-      reminder_type: "after_due",
+      reminder_type: 'after_due',
       scheduled_at: afterDueTime,
-      idempotency_key: generateReminderIdempotencyKey(
-        invoice_id,
-        "after_due",
-        due_date
-      ),
+      idempotency_key: generateReminderIdempotencyKey(invoice_id, 'after_due', due_date),
       sent: false,
     });
 
+    // Store invoice reminders
     state.invoices[invoice_id] = {
       invoice_id,
       due_date,
@@ -145,27 +135,19 @@ export class ReminderScheduler implements DurableObject {
       cancelled: false,
     };
 
-    await this.state.storage.put("state", state);
+    await this.state.storage.put('state', state);
 
-    const nextReminder = reminders.find(
-      (r) => !r.sent && r.scheduled_at > now
-    );
+    // Schedule alarm for earliest reminder
+    const nextReminder = reminders.find(r => !r.sent && r.scheduled_at > now); // finds the next upcoming reminder that hasn't been sent yet
     if (nextReminder) {
       await this.state.storage.setAlarm(nextReminder.scheduled_at);
-    }
+    } // Return scheduled reminders for debugging
 
-    return new Response(
-      JSON.stringify({
-        scheduled: reminders.length,
-        timeline: reminders.map((r) => ({
-          type: r.reminder_type,
-          fires_at: new Date(r.scheduled_at).toISOString(),
-          minutes_from_now: Math.round((r.scheduled_at - now) / 60000),
-        })),
-      }),
-      { headers: { "Content-Type": "application/json" } }
-    );
-  }
+    return new Response(JSON.stringify({ scheduled: reminders.length }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } // this is called when an invoice is created or updated to schedule reminders
+
 
   private async handleCancel(request: Request): Promise<Response> {
     const body = (await request.json()) as { invoice_id: string };

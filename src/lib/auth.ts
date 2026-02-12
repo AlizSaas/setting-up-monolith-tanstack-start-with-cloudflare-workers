@@ -17,7 +17,13 @@ export type AuthConfig = {
       clientId: string;
       clientSecret: string;
     };
+    
   };
+    sendResetPassword?: (data: {
+    email: string;
+    url: string;
+  }) => Promise<void>;
+
 };
 
 export function setAuth(config: AuthConfig) {
@@ -33,6 +39,10 @@ export function setAuth(config: AuthConfig) {
     }),
     secret: config.secret,
     socialProviders: config.socialProviders,
+    
+    sendResetPassword: config.sendResetPassword
+    
+    
   });
   return _auth;
 }
