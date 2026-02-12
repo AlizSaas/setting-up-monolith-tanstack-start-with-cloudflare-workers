@@ -1,4 +1,4 @@
-'use client'
+
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -124,6 +124,14 @@ export function LoginForm() {
                                  {isInvalid && (
                                    <FieldError errors={field.state.meta.errors} />
                                  )}
+                                  <div className="text-right mt-1">
+          <Link
+            to="/forget-password"
+            className="text-sm text-muted-foreground hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
                                </Field>
                              )
                            }}
@@ -140,6 +148,7 @@ export function LoginForm() {
               
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <Link to="/signup">Sign up</Link>
+                  
                 </FieldDescription>
               </Field>
             </FieldGroup>

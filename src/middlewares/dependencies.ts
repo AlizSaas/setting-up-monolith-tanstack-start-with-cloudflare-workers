@@ -38,16 +38,11 @@ export const authMiddleware = createMiddleware()
     });
   }); 
 
-  export const publicMiddleware = createMiddleware({}).server(
-  async ({ next, context }) => {
-    const db = getDb();
+  export const publicMiddleware = createMiddleware({}).middleware([dependencyMiddleware]).server(
+  async ({ next }) => {
+  ;
 
-    return next({
-      context: {
-        ...context,
-        db,
-      },
-    });
+    return next();
   }
 );
   

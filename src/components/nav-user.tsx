@@ -18,6 +18,10 @@ import {
 } from '@/components/ui/sidebar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useTheme } from '@/hooks/theme-provider'
+import { authClient } from '@/lib/auth-client'
+import { Button } from './ui/button'
+import { toast } from 'sonner'
+
 
 interface NavUserProps {
   user: User
@@ -42,6 +46,12 @@ export function NavUser({ user }: NavUserProps) {
         .toUpperCase()
         .slice(0, 2)
     : user.email?.slice(0, 2).toUpperCase() || 'U'
+
+   async function handleLogout() {
+  await authClient.signOut()
+  toast.success('Logged out successfully')
+  window.location.href = '/login'
+}
 
   return (
     <SidebarMenu>
@@ -104,10 +114,13 @@ export function NavUser({ user }: NavUserProps) {
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 text-red-600 focus:text-red-600">
-              <LogOut className="size-4" />
-              Log out
-            </DropdownMenuItem>
+           <DropdownMenuItem className="gap-2 text-red-600 focus:text-red-600" asChild>
+ 
+              <Button variant="ghost" size="sm" onClick={handleLogout} className="w-full justify-start text-red-600 focus:text-red-600">
+                <LogOut className="size-4" />
+                Logout
+              </Button>
+</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

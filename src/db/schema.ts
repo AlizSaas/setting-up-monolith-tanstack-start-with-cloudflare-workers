@@ -128,12 +128,12 @@ export const invoices = pgTable("invoices", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
-  index("idx_invoices_user_id").on(table.userId),
-  index("idx_invoices_client_id").on(table.clientId),
-  index("idx_invoices_status").on(table.userId, table.status),
-  index("idx_invoices_due_date").on(table.dueDate),
-  index("idx_invoices_number").on(table.userId, table.invoiceNumber),
-  index("idx_invoices_created").on(table.userId, table.createdAt),
+  index("idx_invoices_user_id").on(table.userId), // Commonly queried for a user's invoices
+  index("idx_invoices_client_id").on(table.clientId), // Commonly queried for a client's invoices
+  index("idx_invoices_status").on(table.userId, table.status), // For filtering by status in a user's invoices
+  index("idx_invoices_due_date").on(table.dueDate), // For finding overdue invoices
+  index("idx_invoices_number").on(table.userId, table.invoiceNumber), // For looking up by invoice number within a user's invoices
+  index("idx_invoices_created").on(table.userId, table.createdAt), // For sorting by creation date in a user's invoices
 ]);
 
 export const invoiceItems = pgTable("invoice_items", {
@@ -148,7 +148,7 @@ export const invoiceItems = pgTable("invoice_items", {
   amount: numeric("amount", { precision: 12, scale: 2 }).default("0").notNull(),
   sortOrder: integer("sort_order").default(0).notNull(),
 }, (table) => [
-  index("idx_invoice_items_invoice_id").on(table.invoiceId),
+  index("idx_invoice_items_invoice_id").on(table.invoiceId), // For fetching items of an invoice
 ]);
 
 export const invoiceEvents = pgTable("invoice_events", {

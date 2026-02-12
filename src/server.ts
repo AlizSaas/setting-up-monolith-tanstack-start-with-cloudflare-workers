@@ -4,6 +4,7 @@ import { schema } from "./db";
 import { setAuth } from "./lib/auth";
 import { createLogger } from "./utils/logger";
 import { eq, inArray, lt, and } from "drizzle-orm";
+import { sendEmail } from "./lib/auth-emails";
 
 export { ReminderScheduler } from './durable-objects/reminder-schedular';
 
@@ -72,7 +73,15 @@ export default {
       adapter: {
         drizzleDb: getDb(),
         provider: "pg",
-      }
+      },
+      
+  sendResetPassword: async ({ email, url }) => {
+    await sendEmail(env, {
+      to: email,
+      subject: "Reset your password",
+      text: `Click this link to reset your password:\n${url}`,
+    });
+  },
     });
 
     return handler.fetch(request, {
