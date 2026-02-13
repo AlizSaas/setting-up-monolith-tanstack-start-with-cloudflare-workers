@@ -7,8 +7,12 @@ import { fileURLToPath, URL } from 'url'
 
 import tailwindcss from '@tailwindcss/vite'
 import { cloudflare } from '@cloudflare/vite-plugin'
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 const config = defineConfig({
+  build:{
+    sourcemap: import.meta.env.PROD ? 'hidden' : true,
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -29,6 +33,11 @@ const config = defineConfig({
     }),
     viteReact(),
       cloudflare({ viteEnvironment: { name: 'ssr' } }),
+      sentryVitePlugin({
+  org: "alizorganization",  // ← from your Organization Slug
+  project: "node-cloudflare-workers", // ← find this in Settings → Projects
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+}),
   ],
 })
 

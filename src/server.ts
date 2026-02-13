@@ -5,12 +5,13 @@ import { setAuth } from "./lib/auth";
 import { createLogger } from "./utils/logger";
 import { eq, inArray, lt, and } from "drizzle-orm";
 import { sendEmail } from "./lib/auth-emails";
+import * as Sentry from "@sentry/cloudflare";
 
 export { ReminderScheduler } from './durable-objects/reminder-schedular';
 
-async function handleScheduledEvent(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+async function handleScheduledEvent(controller: ScheduledController, env: Env, ctx: ExecutionContext) {
   const logger = createLogger();
-  logger.info('Cron trigger started', { cron: event.cron });
+  logger.info('Cron trigger started', { cron: controller.cron });
 
   createDb(env.DATABASE_URL);
   const db = getDb();
@@ -19,7 +20,6 @@ async function handleScheduledEvent(event: ScheduledEvent, env: Env, ctx: Execut
     const now = new Date();
     const today = now.toISOString().split('T')[0];
 
-    // ✅ Use Drizzle query builder instead of raw SQL
     const overdueResult = await db
       .update(schema.invoices)
       .set({
@@ -36,7 +36,6 @@ async function handleScheduledEvent(event: ScheduledEvent, env: Env, ctx: Execut
 
     logger.info('Updated overdue invoices', { count: overdueResult.length });
 
-    // ✅ Use Drizzle query builder instead of raw SQL
     const usersWithReminders = await db
       .selectDistinct({ userId: schema.invoices.userId })
       .from(schema.invoices)
@@ -62,36 +61,48 @@ async function handleScheduledEvent(event: ScheduledEvent, env: Env, ctx: Execut
     logger.info('Cron trigger completed');
   } catch (error) {
     logger.error('Cron trigger failed', error as Error);
+    throw error; // Re-throw so Sentry captures it!
   }
 }
 
-export default {
-  fetch(request: Request, env: Env, executionCtx: ExecutionContext) {
-    createDb(env.DATABASE_URL);
-    setAuth({
-      secret: env.BETTER_AUTH_SECRET,
-      adapter: {
-        drizzleDb: getDb(),
-        provider: "pg",
-      },
-      
-  sendResetPassword: async ({ email, url }) => {
-    await sendEmail(env, {
-      to: email,
-      subject: "Reset your password",
-      text: `Click this link to reset your password:\n${url}`,
-    });
-  },
-    });
+// ✅ Wrap your entire export with Sentry.withSentry
+export default Sentry.withSentry(
+  (env: Env) => ({
+    dsn: env.SENTRY_DSN, // Add SENTRY_DSN to your wrangler.toml / env
+    tracesSampleRate: 0.1, // Adjust this value in production (e.g., 0.1 for 10% of transactions)
+    enableLogs: true, // Enable Sentry logs
+    sendDefaultPii: false, // Send user info with errors (make sure to set user context in auth middleware
+  }),
+  {
+    async fetch(request: Request, env: Env, executionCtx: ExecutionContext) {
+    
 
-    return handler.fetch(request, {
-      context: {
-        env,
-        waitUntil: executionCtx.waitUntil.bind(executionCtx),
-        fromFetch: true,
-        request: request,
-      },
-    });
-  },
-  scheduled: handleScheduledEvent,
-};
+      createDb(env.DATABASE_URL);
+      setAuth({
+        secret: env.BETTER_AUTH_SECRET,
+        adapter: {
+          drizzleDb: getDb(),
+          provider: "pg",
+        },
+        sendResetPassword: async ({ email, url }) => {
+          await sendEmail(env, {
+            to: email,
+            subject: "Reset your password",
+            text: `Click this link to reset your password:\n${url}`,
+          });
+        },
+      });
+
+      return handler.fetch(request, {
+        context: {
+          env,
+          waitUntil: executionCtx.waitUntil.bind(executionCtx),
+          fromFetch: true,
+          request: request,
+        },
+      });
+    },
+    scheduled: handleScheduledEvent,
+  } satisfies ExportedHandler<Env>
+);
+

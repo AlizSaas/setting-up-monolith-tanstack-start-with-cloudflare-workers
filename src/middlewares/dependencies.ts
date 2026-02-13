@@ -1,8 +1,9 @@
 import { createMiddleware } from "@tanstack/react-start";
-import {  getAuth } from "../lib/auth";
+import { getAuth } from "../lib/auth";
 import { getDb } from "@/db";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { redirect } from "@tanstack/react-router";
+import * as Sentry from "@sentry/cloudflare";
 
 export const dependencyMiddleware = createMiddleware({}).server(
   async ({ next, context }) => {
@@ -11,13 +12,13 @@ export const dependencyMiddleware = createMiddleware({}).server(
 
     return next({
       context: {
-        ...context, // <<— retains env + waitUntil
+        ...context,
         db,
         auth,
       },
     });
   }
-); // dependencyMiddleware
+);
 
 export const authMiddleware = createMiddleware()
   .middleware([dependencyMiddleware])
@@ -27,7 +28,13 @@ export const authMiddleware = createMiddleware()
 
     if (!session) {
       throw redirect({ to: "/login" });
-    } // if no session, redirect to login
+    }
+
+    // ✅ Set user context so errors are tagged with user info
+    Sentry.setUser({
+      id: session.user.id,
+    
+    });
 
     return next({
       context: {
@@ -36,13 +43,10 @@ export const authMiddleware = createMiddleware()
         user: session.user,
       },
     });
-  }); 
+  });
 
-  export const publicMiddleware = createMiddleware({}).middleware([dependencyMiddleware]).server(
+export const publicMiddleware = createMiddleware({}).middleware([dependencyMiddleware]).server(
   async ({ next }) => {
-  ;
-
     return next();
   }
 );
-  
