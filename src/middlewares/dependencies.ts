@@ -33,7 +33,7 @@ export const authMiddleware = createMiddleware()
     // ✅ Set user context so errors are tagged with user info
     Sentry.setUser({
       id: session.user.id,
-      email: session.user.email,
+    
     });
 
     return next({

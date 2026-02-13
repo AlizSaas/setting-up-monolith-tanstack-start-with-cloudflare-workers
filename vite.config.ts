@@ -11,7 +11,7 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 const config = defineConfig({
   build:{
-    sourcemap: true,
+    sourcemap: import.meta.env.PROD ? 'hidden' : true,
   },
   resolve: {
     alias: {

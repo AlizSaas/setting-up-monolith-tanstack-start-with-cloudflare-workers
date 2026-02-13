@@ -69,9 +69,9 @@ async function handleScheduledEvent(controller: ScheduledController, env: Env, c
 export default Sentry.withSentry(
   (env: Env) => ({
     dsn: env.SENTRY_DSN, // Add SENTRY_DSN to your wrangler.toml / env
-    tracesSampleRate: 1.0, // Capture 100% of traces (reduce in production)
+    tracesSampleRate: 0.1, // Adjust this value in production (e.g., 0.1 for 10% of transactions)
     enableLogs: true, // Enable Sentry logs
-    sendDefaultPii: true, // Send user info with errors (make sure to set user context in auth middleware
+    sendDefaultPii: false, // Send user info with errors (make sure to set user context in auth middleware
   }),
   {
     async fetch(request: Request, env: Env, executionCtx: ExecutionContext) {
